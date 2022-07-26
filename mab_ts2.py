@@ -160,14 +160,26 @@ class StrategyInvestRebalancing(StrategyInvest):
 class Arm:
 
     def __init__(self, play):
+        """
+        play - a callable object that returns a reward value
+        """
+
         self._play = play
         self.rewards = []
     
+    @property
     def times_played(self):
+        """
+        Number of times this arm's been played
+        """
         return len(self.rewards)
         
+    @property
     def mean_reward(self):
-        return np.sum(self.rewards)/len(self.rewards)
+        """
+        The mean reward received over all plays of this arm
+        """
+        return np.sum(self.rewards)/self.times_played
     
     def update(self):
         raise NotImplementedError
@@ -187,8 +199,8 @@ class ArmNormalGamma(Arm):
         self.lmd = lmd
 
     def update(self):
-        n = self.times_played()
-        m = self.mean_reward()
+        n = self.times_played
+        m = self.mean_reward
         self.mu = (self.lmd*self.mu + n*m)/ \
                   (self.lmd + n)
         self.lmd +=  n
