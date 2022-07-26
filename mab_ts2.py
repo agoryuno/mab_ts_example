@@ -38,6 +38,7 @@ class Strategy(ABC):
         ...
 
 class StrategyInvest(Strategy):
+
     def __init__(self, shares, 
                  init_stock=INIT_STOCK, 
                  num_rounds=NUM_ROUNDS,
@@ -123,7 +124,7 @@ class StrategyInvestRebalancing(StrategyInvest):
         ret = super().__call__()
         self.rebalance()
         return ret
-    
+
     def rebalance(self):
         values = self.get_values()
         total_value = self._get_total_value()
@@ -155,3 +156,52 @@ class StrategyInvestRebalancing(StrategyInvest):
             for ds in diff_shares:
                 quant_buy = (cash*ds[1])/self.prices[ds[0]][-1]
                 self.portfolio[ds[0]] += quant_buy
+
+class Arm:
+
+    def __init__(self, play):
+        self._play = play
+        self.rewards = []
+    
+    def times_played(self):
+        return len(self.rewards)
+        
+    def mean_reward(self):
+        return np.sum(self.rewards)/len(self.rewards)
+    
+    def update(self):
+        raise NotImplementedError
+    
+    def __call__(self):
+        reward = self._play()
+        self.rewards.append(reward)
+        self.update()
+
+class ArmNormalGamma(Arm):
+
+    def __init__(self, play, alpha=1, beta=1, mu=0, lmd=0, **kwargs):
+        super().__init__(play, **kwargs)
+        self.alpha = alpha
+        self.beta = beta
+        self.mu = mu
+        self.lmd = lmd
+
+    def update(self):
+        n = self.times_played()
+        m = self.mean_reward()
+        self.mu = (self.lmd*self.mu + n*m)/ \
+                  (self.lmd + n)
+        self.lmd +=  n
+        self.alpha += n/2.
+        rewards = np.array(self.rewards)
+        self.beta += 0.5*np.sum((rewards-m)**2) + \
+                (n*self.lmd)/(self.lmd+n) * 0.5 * (m - self.mu)**2
+
+    def sample(self):
+        tau = gamma.rvs(self.alpha, 1./self.beta)
+        return norm.rvs(self.mu, np.sqrt(1/(self.lmd*tau)) )
+
+    def __call__(self):
+        reward = np.log(self._play())
+        self.rewards.append(reward)
+        self.update()
