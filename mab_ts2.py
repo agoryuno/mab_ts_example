@@ -163,7 +163,6 @@ class Arm:
         """
         play - a callable object that returns a reward value
         """
-
         self._play = play
         self.rewards = []
     
@@ -179,7 +178,7 @@ class Arm:
         """
         The mean reward received over all plays of this arm
         """
-        return np.sum(self.rewards)/self.times_played
+        return np.mean(self.rewards)
     
     def update(self):
         raise NotImplementedError
@@ -207,13 +206,16 @@ class ArmNormalGamma(Arm):
         self.alpha += n/2.
         rewards = np.array(self.rewards)
         self.beta += 0.5*np.sum((rewards-m)**2) + \
-                (n*self.lmd)/(self.lmd+n) * 0.5 * (m - self.mu)**2
+                (n*self.lmd)/(self.lmd+n) * (0.5 * (m - self.mu)**2)
 
     def sample(self):
         tau = gamma.rvs(self.alpha, 1./self.beta)
         return norm.rvs(self.mu, np.sqrt(1/(self.lmd*tau)) )
 
     def __call__(self):
-        reward = np.log(self._play())
+        reward = self._play()
+        if reward == 0:
+            reward = 1e-9
+        reward = np.log(reward)
         self.rewards.append(reward)
         self.update()
