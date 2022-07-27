@@ -192,7 +192,8 @@ class Arm:
 
 class ArmNormalGamma(Arm):
 
-    def __init__(self, play, alpha=1, beta=1, mu=0, lmd=0, **kwargs):
+    def __init__(self, play, alpha=1, beta=1, 
+            mu=0, lmd=0, **kwargs):
         super().__init__(play, **kwargs)
         self.alpha = alpha
         self.beta = beta
