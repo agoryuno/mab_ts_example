@@ -212,8 +212,8 @@ class ArmNormalGamma(Arm):
                 (n*self.lmd)/(self.lmd+n) * (0.5 * (m - self.mu)**2)
 
     def sample(self):
-        tau = gamma.rvs(self.alpha, 1./self.beta)
-        return norm.rvs(self.mu, np.sqrt(1/(self.lmd*tau)) )
+        tau = gamma.rvs(self.alpha, scale=1./self.beta)
+        return norm.rvs(self.mu, scale=np.sqrt(1/(self.lmd*tau)) )
 
     def __call__(self):
         reward = self._play()
