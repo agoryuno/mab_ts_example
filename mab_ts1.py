@@ -88,7 +88,7 @@ class StrategyInvest(Strategy):
         Returns the portfolio's total value given current 
         fund share prices 
         """
-        return sum([value for value in self.get_values().values()])
+        return sum(list(self.get_values().values()))
     
     def get_values(self):
         """
@@ -104,8 +104,7 @@ class StrategyInvest(Strategy):
         shares of the corresponding funds in the total portfolio 
         value as values
         """
-        values = self.get_values()
-        total_value = np.sum(list(values.values()))
+        total_value = self.__get_total_value()
         return {fund : value / total_value for fund, value in values.items()}
        
     def __call__(self):
