@@ -105,8 +105,8 @@ class StrategyInvest(Strategy):
         shares of the corresponding funds in the total portfolio 
         value as values
         """
-        total_value = self.__get_total_value()
-        return {fund : value / total_value for fund, value in values.items()}
+        total_value = self._get_total_value()
+        return {fund : value / total_value for fund, value in self.get_values().items()}
        
     def __call__(self):
         for i in range(self.num_rounds):
